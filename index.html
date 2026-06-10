@@ -68,12 +68,15 @@
   .trust b{color:var(--green);font-size:16px}
 
   /* fan of cards */
-  .fan{position:relative;height:480px}
+  .fan{position:relative;height:545px}
   .doc{
     position:absolute;width:300px;border-radius:20px;padding:22px;box-shadow:var(--sh2);
-    transition:transform .35s ease;will-change:transform;
+    transition:transform .35s ease,box-shadow .35s ease;will-change:transform;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
   }
-  .doc:hover{transform:translateY(-14px) rotate(0deg)!important;z-index:9}
+  @media(hover:hover){
+    .doc:hover{transform:translateY(-14px) rotate(0deg)!important;z-index:9}
+  }
   .doc .meta{color:rgba(0,0,0,.45);margin-bottom:14px}
   .doc h3{font-size:18px;margin-bottom:4px}
   .doc .sub{font-size:13px;color:rgba(0,0,0,.55)}
@@ -86,15 +89,19 @@
   .clock{margin-top:18px;font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--ink);display:flex;align-items:center;gap:7px}
   .clock .pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-  .d1{background:var(--g-mint);top:30px;left:6%;transform:rotate(-7deg);z-index:4;animation:float 6s ease-in-out infinite}
-  .d2{background:var(--g-blue);top:120px;left:30%;transform:rotate(4deg);z-index:3;animation:float 7s ease-in-out infinite .6s}
-  .d3{background:var(--g-coral);top:230px;left:12%;transform:rotate(-3deg);z-index:2;animation:float 8s ease-in-out infinite 1.1s}
-  @keyframes float{0%,100%{margin-top:0}50%{margin-top:-10px}}
+  .d1{background:var(--g-mint);top:30px;left:6%;transform:rotate(-7deg);z-index:4}
+  .d2{background:var(--g-blue);top:120px;left:30%;transform:rotate(4deg);z-index:3}
+  .d3{background:var(--g-coral);top:230px;left:12%;transform:rotate(-3deg);z-index:2}
+  .doc.front{z-index:9;box-shadow:0 22px 44px rgba(0,0,0,.16);transform:translateY(-10px) rotate(0deg)!important}
 
   @media(max-width:880px){
     .hero-grid{grid-template-columns:1fr}
-    .fan{height:430px;margin-top:8px}
-    .d1{left:0}.d2{left:18%}.d3{left:6%}
+    .fan{height:530px;margin-top:8px}
+    .doc{width:258px;padding:18px}
+    .doc h3{font-size:16px}
+    .d1{top:14px;left:0}
+    .d2{top:128px;left:auto;right:0}
+    .d3{top:248px;left:8%}
   }
 
   /* ===== services ===== */
@@ -441,6 +448,23 @@
     document.querySelectorAll('.time').forEach(el=>el.textContent=s);
   }
   tick(); setInterval(tick,1000);
+
+  // покачивание карточек на JS — работает даже при «Уменьшении движения» на iPhone
+  const docs=[...document.querySelectorAll('.doc')];
+  function float(t){
+    docs.forEach((el,i)=>{
+      el.style.translate=`0 ${Math.sin(t/1200+i*2.1)*7}px`;
+    });
+    requestAnimationFrame(float);
+  }
+  requestAnimationFrame(float);
+
+  // тап по карточке выводит её на передний план (pointerdown надёжен на iOS)
+  docs.forEach(el=>el.addEventListener('pointerdown',()=>{
+    const was=el.classList.contains('front');
+    docs.forEach(d=>d.classList.remove('front'));
+    if(!was)el.classList.add('front');
+  }));
 
   // декоративные QR-паттерны (детерминированный псевдослучай для каждой карточки)
   document.querySelectorAll('.qr').forEach((qr,k)=>{
